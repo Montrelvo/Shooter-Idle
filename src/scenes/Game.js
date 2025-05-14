@@ -10,7 +10,7 @@ import PlayerBullet from '../gameObjects/PlayerBullet.js';
 import EnemyFlying from '../gameObjects/EnemyFlying.js';
 import EnemyBullet from '../gameObjects/EnemyBullet.js';
 import Explosion from '../gameObjects/Explosion.js';
-
+import { Continue } from './Continue.js';
 export class Game extends Phaser.Scene {
     constructor() {
         super('Game');
@@ -93,14 +93,20 @@ export class Game extends Phaser.Scene {
             .setDepth(GameConfig.ui.scoreText.depth);
 
         // Create bullet timer text
-        this.bulletTimerText = this.add.text(GameConfig.ui.scoreText.position.x, GameConfig.ui.scoreText.position.y + 20, 'Bullet Timer: 0', GameConfig.ui.scoreText.style)
+        this.bulletTimerText = this.add.text(GameConfig.ui.scoreText.position.x, GameConfig.ui.scoreText.position.y + 40, 'Bullet Timer: 0', GameConfig.ui.scoreText.style)
             .setDepth(GameConfig.ui.scoreText.depth);
 
         // Create game over text
         this.gameOverText = this.add.text(this.scale.width * 0.5, this.scale.height * 0.5, GameConfig.ui.gameOverText.content, GameConfig.ui.gameOverText.style)
             .setOrigin(GameConfig.ui.gameOverText.origin)
             .setDepth(GameConfig.ui.gameOverText.depth)
-            .setVisible(false);
+            .setVisible(false)
+            .setInteractive(); // Make the text interactive
+        
+        // Add a pointerup listener to restart the game on click
+        this.gameOverText.on('pointerup', () => {
+            this.scene.restart();
+        });
     }
 
     initAnimations() {
@@ -262,10 +268,32 @@ export class Game extends Phaser.Scene {
     updateScore(points) {
         this.score += points;
         this.scoreText.setText(`Score: ${this.score}`);
+        // Increase bullet timer delay for every 50 points
+        if (this.score > 0 && this.score % 50 === 0) {
+            this.bulletTimerDelay += 1;
+        }
     }
 
     GameOver() {
         this.gameStarted = false;
-        this.gameOverText.setVisible(true);
+        // Pause the game scene and launch the Continue scene, passing the game scene instance
+        this.scene.pause('Game');
+        this.scene.launch('Continue', { gameScene: this });
+    }
+
+    spawnNewShip() {
+        // Remove the old player if it exists
+        if (this.player) {
+            this.player.destroy();
+        }
+        // Create a new player instance
+        this.initPlayer();
+        // Reset score and bullet timer for a fresh start after continuing
+        this.score = 0;
+        this.scoreText.setText(`Score: ${this.score}`);
+        this.bulletTimer = 0;
+        this.bulletTimerDelay = 60;
+        this.bulletTimerText.setText(`Bullet Timer: ${Math.max(0, Math.ceil(this.bulletTimer / 60))}`);
+        this.gameStarted = true; // Start the game loop again
     }
 }
