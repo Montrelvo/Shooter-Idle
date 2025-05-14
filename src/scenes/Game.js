@@ -27,6 +27,7 @@ export class Game extends Phaser.Scene {
     }
 
     update() {
+        console.log('Game scene update is running');
         this.updateMap();
 
         if (!this.gameStarted) return;
@@ -276,12 +277,15 @@ export class Game extends Phaser.Scene {
 
     GameOver() {
         this.gameStarted = false;
-        // Pause the game scene and launch the Continue scene, passing the game scene instance
-        this.scene.pause('Game');
+        // Launch the Continue scene, passing the game scene instance
         this.scene.launch('Continue', { gameScene: this });
     }
 
     spawnNewShip() {
+        // Clear existing enemies and enemy bullets
+        this.enemyGroup.clear(true, true);
+        this.enemyBulletGroup.clear(true, true);
+
         // Remove the old player if it exists
         if (this.player) {
             this.player.destroy();
