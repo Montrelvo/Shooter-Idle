@@ -1,3 +1,4 @@
+import { GameConfig } from '../config.js';
 /*
 * Asset from: https://kenney.nl/assets/pixel-platformer
 *
@@ -42,14 +43,14 @@ export class Game extends Phaser.Scene {
 
         // list of tile ids in tiles.png
         // items nearer to the beginning of the array have a higher chance of being randomly chosen when using weighted()
-        this.tiles = [50, 50, 50, 50, 50, 50, 50, 50, 50, 110, 110, 110, 110, 110, 50, 50, 50, 50, 50, 50, 50, 50, 50, 110, 110, 110, 110, 110, 36, 48, 60, 72, 84];
-        this.tileSize = 32; // width and height of a tile in pixels
+        this.tiles = GameConfig.map.tiles;
+        this.tileSize = GameConfig.map.tileSize; // width and height of a tile in pixels
 
-        this.mapOffset = 10; // offset (in tiles) to move the map above the top of the screen
+        this.mapOffset = GameConfig.map.mapOffset; // offset (in tiles) to move the map above the top of the screen
         this.mapTop = -this.mapOffset * this.tileSize; // offset (in pixels) to move the map above the top of the screen
         this.mapHeight = Math.ceil(this.scale.height / this.tileSize) + this.mapOffset + 1; // height of the tile map (in tiles)
         this.mapWidth = Math.ceil(this.scale.width / this.tileSize); // width of the tile map (in tiles)
-        this.scrollSpeed = 1; // background scrolling speed (in pixels)
+        this.scrollSpeed = GameConfig.map.scrollSpeed; // background scrolling speed (in pixels)
         this.scrollMovement = 0; // current scroll amount
         this.spawnEnemyCounter = 0; // timer before spawning next group of enemies
 
@@ -59,29 +60,18 @@ export class Game extends Phaser.Scene {
 
     initGameUi() {
         // Create tutorial text
-        this.tutorialText = this.add.text(this.centreX, this.centreY, 'Tap to shoot!', {
-            fontFamily: 'Arial Black', fontSize: 42, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        })
-            .setOrigin(0.5)
-            .setDepth(100);
+        this.tutorialText = this.add.text(this.centreX, this.centreY, GameConfig.ui.tutorialText.content, GameConfig.ui.tutorialText.style)
+            .setOrigin(GameConfig.ui.tutorialText.origin)
+            .setDepth(GameConfig.ui.tutorialText.depth);
 
         // Create score text
-        this.scoreText = this.add.text(20, 20, 'Score: 0', {
-            fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-        })
-            .setDepth(100);
+        this.scoreText = this.add.text(GameConfig.ui.scoreText.position.x, GameConfig.ui.scoreText.position.y, GameConfig.ui.scoreText.content, GameConfig.ui.scoreText.style)
+            .setDepth(GameConfig.ui.scoreText.depth);
 
         // Create game over text
-        this.gameOverText = this.add.text(this.scale.width * 0.5, this.scale.height * 0.5, 'Game Over', {
-            fontFamily: 'Arial Black', fontSize: 64, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        })
-            .setOrigin(0.5)
-            .setDepth(100)
+        this.gameOverText = this.add.text(this.scale.width * 0.5, this.scale.height * 0.5, GameConfig.ui.gameOverText.content, GameConfig.ui.gameOverText.style)
+            .setOrigin(GameConfig.ui.gameOverText.origin)
+            .setDepth(GameConfig.ui.gameOverText.depth)
             .setVisible(false);
     }
 
@@ -105,7 +95,7 @@ export class Game extends Phaser.Scene {
     }
 
     initPlayer() {
-        this.player = new Player(this, this.centreX, this.scale.height - 100, 8);
+        this.player = new Player(this, this.centreX, this.scale.height - GameConfig.player.initialYOffset, GameConfig.player.initialHealth);
     }
 
     initInput() {
@@ -197,13 +187,13 @@ export class Game extends Phaser.Scene {
 
     // add a group of flying enemies
     addFlyingGroup() {
-        this.spawnEnemyCounter = Phaser.Math.RND.between(5, 8) * 60; // spawn next group after x seconds
-        const randomId = Phaser.Math.RND.between(0, 11); // id to choose image in tiles.png
-        const randomCount = Phaser.Math.RND.between(5, 15); // number of enemies to spawn
-        const randomInterval = Phaser.Math.RND.between(8, 12) * 100; // delay between spawning of each enemy
-        const randomPath = Phaser.Math.RND.between(0, 3); // choose a path, a group follows the same path
-        const randomPower = Phaser.Math.RND.between(1, 4); // strength of the enemy to determine damage to inflict and selecting bullet image
-        const randomSpeed = Phaser.Math.RND.realInRange(0.0001, 0.001); // increment of pathSpeed in enemy
+        this.spawnEnemyCounter = Phaser.Math.RND.between(GameConfig.enemy.spawnTimerRange.min, GameConfig.enemy.spawnTimerRange.max); // spawn next group after x seconds
+        const randomId = Phaser.Math.RND.between(0, 11); // id to choose image in tiles.png - This could also be moved to config
+        const randomCount = Phaser.Math.RND.between(GameConfig.enemy.groupCountRange.min, GameConfig.enemy.groupCountRange.max); // number of enemies to spawn
+        const randomInterval = Phaser.Math.RND.between(GameConfig.enemy.spawnIntervalRange.min, GameConfig.enemy.spawnIntervalRange.max); // delay between spawning of each enemy
+        const randomPath = Phaser.Math.RND.between(0, 3); // choose a path, a group follows the same path - This could also be moved to config
+        const randomPower = Phaser.Math.RND.between(GameConfig.enemy.powerRange.min, GameConfig.enemy.powerRange.max); // strength of the enemy to determine damage to inflict and selecting bullet image
+        const randomSpeed = Phaser.Math.RND.realInRange(GameConfig.enemy.speedRange.min, GameConfig.enemy.speedRange.max); // increment of pathSpeed in enemy
 
         this.timedEvent = this.time.addEvent(
             {
