@@ -15,6 +15,7 @@ export const GameConfig = {
     player: {
         initialHealth: 8,
         initialYOffset: 100, // offset from bottom of screen
+        moveSpeed: 1, // Pixels per second
     },
     ui: {
         tutorialText: {

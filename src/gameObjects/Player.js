@@ -25,28 +25,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         super.preUpdate(time, delta);
 
         if (this.fireCounter > 0) this.fireCounter--;
-
-        this.checkInput();
-    }
-
-    checkInput() {
-        const cursors = this.scene.cursors; // get cursors object from Game scene
-        const leftKey = cursors.left.isDown;
-        const rightKey = cursors.right.isDown;
-        const upKey = cursors.up.isDown;
-        const downKey = cursors.down.isDown;
-        const spaceKey = cursors.space.isDown;
-
-        const moveDirection = { x: 0, y: 0 }; // default move direction
-
-        if (leftKey) moveDirection.x--;
-        if (rightKey) moveDirection.x++;
-        if (upKey) moveDirection.y--;
-        if (downKey) moveDirection.y++;
-        if (spaceKey) this.fire();
-
-        this.body.velocity.x += moveDirection.x * this.velocityIncrement; // increase horizontal velocity
-        this.body.velocity.y += moveDirection.y * this.velocityIncrement; // increase vertical velocity
     }
 
     fire() {

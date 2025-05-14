@@ -31,7 +31,26 @@ export class Game extends Phaser.Scene {
 
         if (!this.gameStarted) return;
 
-        this.player.update();
+        // Automatic player movement
+        this.player.x += this.playerMoveDirection * this.playerMoveSpeed;
+
+        // Reverse direction if player hits screen bounds
+        if (this.playerMoveDirection === 1 && this.player.x > this.scale.width - this.player.width * 0.5) {
+            this.playerMoveDirection = -1;
+        } else if (this.playerMoveDirection === -1 && this.player.x < this.player.width * 0.5) {
+            this.playerMoveDirection = 1;
+        }
+
+        // Timed bullet firing
+        this.bulletTimer--;
+        if (this.bulletTimer <= 0) {
+            this.fireBullet(this.player.x, this.player.y - this.player.height * 0.5);
+            this.bulletTimer = this.bulletTimerDelay;
+        }
+
+        // Update bullet timer display
+        this.bulletTimerText.setText(`Bullet Timer: ${Math.max(0, Math.ceil(this.bulletTimer / 60))}`); // Display in seconds
+
         if (this.spawnEnemyCounter > 0) this.spawnEnemyCounter--;
         else this.addFlyingGroup();
     }
@@ -54,6 +73,11 @@ export class Game extends Phaser.Scene {
         this.scrollMovement = 0; // current scroll amount
         this.spawnEnemyCounter = 0; // timer before spawning next group of enemies
 
+        this.playerMoveDirection = 1; // 1 for right, -1 for left
+        this.playerMoveSpeed = GameConfig.player.moveSpeed; // Use player move speed from config
+        this.bulletTimer = 0;
+        this.bulletTimerDelay = 60; // Initial delay in frames (adjust as needed)
+
         this.map; // rference to tile map
         this.groundLayer; // reference to ground layer of tile map
     }
@@ -66,6 +90,10 @@ export class Game extends Phaser.Scene {
 
         // Create score text
         this.scoreText = this.add.text(GameConfig.ui.scoreText.position.x, GameConfig.ui.scoreText.position.y, GameConfig.ui.scoreText.content, GameConfig.ui.scoreText.style)
+            .setDepth(GameConfig.ui.scoreText.depth);
+
+        // Create bullet timer text
+        this.bulletTimerText = this.add.text(GameConfig.ui.scoreText.position.x, GameConfig.ui.scoreText.position.y + 20, 'Bullet Timer: 0', GameConfig.ui.scoreText.style)
             .setDepth(GameConfig.ui.scoreText.depth);
 
         // Create game over text
@@ -99,10 +127,8 @@ export class Game extends Phaser.Scene {
     }
 
     initInput() {
-        this.cursors = this.input.keyboard.createCursorKeys();
-
-        // check for spacebar press only once
-        this.cursors.space.once('down', (key, event) => {
+        // check for spacebar press only once to start the game
+        this.input.keyboard.once('keydown-SPACE', (event) => {
             this.startGame();
         });
     }
